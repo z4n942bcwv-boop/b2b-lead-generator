@@ -44,7 +44,7 @@ export async function getLead(id: string) {
   return data as Lead;
 }
 
-export async function createLead(input: LeadInput) {
+export async function createLead(input: any) {
   const supabase = getSupabaseServerClient();
   if (!supabase) {
     const now = new Date().toISOString();
