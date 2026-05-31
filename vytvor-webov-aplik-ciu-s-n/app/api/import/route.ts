@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         continue;
       }
 
-      created.push(await createLead(result.data));
+      created.push(await createLead(result.data as any));
     }
 
     return NextResponse.json({ imported: created.length, errors, leads: created });
