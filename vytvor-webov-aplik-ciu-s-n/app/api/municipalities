@@ -1,0 +1,43 @@
+import { readFile } from "fs/promises";
+import path from "path";
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+type Municipality = {
+  name: string;
+  type: string;
+  district: string;
+  region: string;
+  code: string;
+};
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+async function loadMunicipalities() {
+  const file = await readFile(path.join(process.cwd(), "prototype", "municipalities.js"), "utf8");
+  const match = file.match(/window\.SLOVAK_MUNICIPALITIES = ([\s\S]*);\s*$/);
+  return match ? (JSON.parse(match[1]) as Municipality[]) : [];
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const query = normalizeText(searchParams.get("q") ?? "").trim();
+
+  if (!query) {
+    return NextResponse.json({ municipalities: [] });
+  }
+
+  const municipalities = await loadMunicipalities();
+  const matches = municipalities
+    .filter((item) => normalizeText(item.name).startsWith(query))
+    .sort((a, b) => a.name.localeCompare(b.name, "sk"))
+    .slice(0, 36);
+
+  return NextResponse.json({ municipalities: matches });
+}
