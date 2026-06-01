@@ -227,13 +227,48 @@ export function LeadDashboard({ initialLeads }: Props) {
               ) : null}
             </div>
 
-            <input
-              value={searchIntent.location}
-              onChange={(event) => setSearchIntent({ ...searchIntent, location: event.target.value })}
-              className="h-10 rounded-md border border-line bg-ink/70 px-3 text-sm outline-none placeholder:text-slate-500 focus:border-mint"
-              placeholder="vyberte miesto"
-            />
+            <div className="relative">
+  <input
+    value={searchIntent.location}
+    onChange={async (event) => {
+      const value = event.target.value;
+      setSearchIntent({ ...searchIntent, location: value });
 
+      if (!value.trim()) {
+        setLocationSuggestions([]);
+        return;
+      }
+
+      const response = await fetch(`/api/municipalities?q=${encodeURIComponent(value)}`);
+      const data = await response.json();
+      setLocationSuggestions(data.municipalities ?? []);
+    }}
+    className="h-10 w-full rounded-md border border-line bg-ink/70 px-3 text-sm outline-none placeholder:text-slate-500 focus:border-mint"
+    placeholder="vyberte miesto"
+    autoComplete="off"
+  />
+
+  {locationSuggestions.length > 0 ? (
+    <div className="absolute left-0 right-0 top-11 z-30 max-h-80 overflow-y-auto rounded-md border border-line bg-ink shadow-glow">
+      {locationSuggestions.map((item) => (
+        <button
+          key={item.code}
+          type="button"
+          onClick={() => {
+            setSearchIntent({ ...searchIntent, location: item.name });
+            setLocationSuggestions([]);
+          }}
+          className="block w-full px-3 py-2 text-left hover:bg-mint/10"
+        >
+          <span className="block text-sm font-medium text-slate-200">{item.name}</span>
+          <span className="block text-xs text-slate-500">
+            {item.type} · okres {item.district} · {item.region}
+          </span>
+        </button>
+      ))}
+    </div>
+  ) : null}
+</div>
             <select
               value={searchIntent.service}
               onChange={(event) => setSearchIntent({ ...searchIntent, service: event.target.value })}
