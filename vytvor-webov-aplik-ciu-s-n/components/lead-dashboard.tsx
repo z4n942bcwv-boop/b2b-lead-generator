@@ -62,6 +62,9 @@ export function LeadDashboard({ initialLeads }: Props) {
   const [filters, setFilters] = useState(emptyFilters);
   const [searchIntent, setSearchIntent] = useState({ businessType: "", location: "", service: "" });
   const [showBusinessOptions, setShowBusinessOptions] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState<
+  { name: string; type: string; district: string; region: string; code: string }[]
+>([]);
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
